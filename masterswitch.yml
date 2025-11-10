@@ -1,5 +1,5 @@
 include:
-  - path: ./compose.yml
+  - path: ./docker-compose.yml
   - path: ../tsg-9.27-joey-stanley-frontend-feedback-ui/docker-compose.yml
   - path: ../tsg-9.27-joey-stanley-feedback-analytics-consumer/docker-compose.yml
 

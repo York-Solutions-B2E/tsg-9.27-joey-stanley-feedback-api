@@ -1,0 +1,8 @@
+include:
+  - path: ./docker-compose-spring.yml
+  - path: ./docker-compose-postgres.yml
+  - path: ./docker-compose-kafka.yml
+
+networks:
+  stanjgcnet:
+    driver: bridge

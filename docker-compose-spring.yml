@@ -1,15 +1,4 @@
 services:
-  db:
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: test_database
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-    networks:
-      - stanjgcnet
-
   springcoreapi:
     build: .
     ports:
@@ -23,7 +12,3 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     networks:
       - stanjgcnet
-
-networks:
-  stanjgcnet:
-    driver: bridge
