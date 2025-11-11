@@ -1,12 +1,15 @@
 package com.joey.stanley.group.project.feedback_api.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name="feedback")
 @Check(constraints = "rating BETWEEN 1 AND 5")
