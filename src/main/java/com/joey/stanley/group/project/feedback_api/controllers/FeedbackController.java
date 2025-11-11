@@ -46,7 +46,7 @@ public class FeedbackController {
 
     //TODO: Send back DTO list
     @GetMapping(value="/feedback")
-    public ResponseEntity<Void> getFeedbackByMemberId(@RequestParam UUID memberId) {
+    public ResponseEntity<Void> getFeedbackByMemberId(@RequestParam String memberId) {
         //TODO
         
         return new ResponseEntity<>(HttpStatus.OK);
