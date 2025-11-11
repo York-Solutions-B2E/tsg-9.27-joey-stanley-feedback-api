@@ -1,6 +1,6 @@
 services:
   springcoreapi:
-    build: .
+    image: maven:3.9.11-eclipse-temurin-25-alpine
     ports:
       - "8080:8080"
     depends_on:
@@ -10,5 +10,13 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    volumes:
+      - .:/app
+      - maven-cache:/root/.m2
+    working_dir: /app
+    command: mvn clean package spring-boot:run
     networks:
       - stanjgcnet
+
+volumes:
+  maven-cache:
