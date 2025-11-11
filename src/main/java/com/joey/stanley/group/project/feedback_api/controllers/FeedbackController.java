@@ -52,7 +52,7 @@ public class FeedbackController {
         }
     }
 
-    @GetMapping(value="/feedback/{id}")
+    @GetMapping(value="/feedback/{feedbackId}")
     public ResponseEntity<Object> findFeedbackById(@PathVariable UUID feedbackId) {
         Optional<FeedbackResponse> response = feedbackService.findFeedbackById(feedbackId);
 
