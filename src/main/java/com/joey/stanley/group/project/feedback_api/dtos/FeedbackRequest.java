@@ -16,12 +16,12 @@ public class FeedbackRequest {
     private int rating;
     private String comment;
 
-    public Feedback toEntity(FeedbackRequest request) {
+    public Feedback toEntity() {
         Feedback feedback = new Feedback();
-        feedback.setMemberId(request.getMemberId());
-        feedback.setProviderName(request.getProviderName());
-        feedback.setRating(request.getRating());
-        feedback.setComment(request.getComment());
+        feedback.setMemberId(this.getMemberId());
+        feedback.setProviderName(this.getProviderName());
+        feedback.setRating(this.getRating());
+        feedback.setComment(this.getComment());
         return feedback;
     }
 }

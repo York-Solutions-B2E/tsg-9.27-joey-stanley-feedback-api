@@ -43,7 +43,7 @@ public class FeedbackService {
             throw new ValidationException("Field 'comment' must be ≤ 200 characters");
         }
         //Save to DB
-        Feedback feedback = request.toEntity(request);
+        Feedback feedback = request.toEntity();
         Feedback savedFeedback = feedbackRepository.save(feedback);
 
         //Create event object & send to Kafka
