@@ -44,6 +44,7 @@ public class FeedbackController {
     @PostMapping(value="/feedback")
     public ResponseEntity<Object> createNewFeedback(@RequestBody FeedbackRequest entity) {
         try {
+            System.out.println("endpoint hit");
             Feedback created = feedbackService.createFeedback(entity);
             URI location = URI.create("/api/v1/feedback/" + created.getId().toString());
             return ResponseEntity.created(location).body(created);
