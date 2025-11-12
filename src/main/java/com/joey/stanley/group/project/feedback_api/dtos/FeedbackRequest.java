@@ -15,4 +15,13 @@ public class FeedbackRequest {
     private String providerName;
     private int rating;
     private String comment;
+
+    public Feedback toEntity(FeedbackRequest request) {
+        Feedback feedback = new Feedback();
+        feedback.setMemberId(request.getMemberId());
+        feedback.setProviderName(request.getProviderName());
+        feedback.setRating(request.getRating());
+        feedback.setComment(request.getComment());
+        return feedback;
+    }
 }
