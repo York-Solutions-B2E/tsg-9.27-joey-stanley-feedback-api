@@ -17,7 +17,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.joey.stanley.group.project.feedback_api.config.JacksonConfig;
 import com.joey.stanley.group.project.feedback_api.dtos.FeedbackRequest;
 import com.joey.stanley.group.project.feedback_api.dtos.FeedbackResponse;
 import com.joey.stanley.group.project.feedback_api.entity.Feedback;
@@ -40,31 +39,19 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
 @WebMvcTest(value = FeedbackController.class)
-@ContextConfiguration(classes = { JacksonConfig.class })
 public class FeedbackControllerTest {
 
-    @Mock
+    // Technically deprecated, but I can't find docs for a working
+    // arrangement which simply uses `@Mock` instead.
+    @MockBean
     private FeedbackService feedbackService;
 
-    @InjectMocks
-    private FeedbackController feedbackController;
-
+    @Autowired
     private MockMvc mockMvc;
 
-    // This is necessary to use the alternative Jackson config within test environments
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    void setup() {
-        assertNotNull(objectMapper);
-        mockMvc = MockMvcBuilders.standaloneSetup(feedbackController).build();
-    }
-
-    private static String asJsonString(ObjectMapper objectMapper, Object obj) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(obj);
+    private static String asJsonString(Object obj) throws JsonProcessingException {
+        return (new ObjectMapper()).writeValueAsString(obj);
     }
 
     private static String API_ROOT = "/api/v1/feedback";
@@ -117,7 +104,7 @@ public class FeedbackControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(post(API_ROOT)
                                               .contentType(MediaType.APPLICATION_JSON)
-                                              .content(asJsonString(objectMapper, validRequest)))
+                                              .content(asJsonString(validRequest)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath(MEMBER_ID_PATH, is(MOCK_MEMBER_ID)))
             .andExpect(jsonPath(PROVIDER_NAME_PATH, is(MOCK_PROVIDER_NAME)))
@@ -138,7 +125,7 @@ public class FeedbackControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(post(API_ROOT)
                                               .contentType(MediaType.APPLICATION_JSON)
-                                              .content(asJsonString(objectMapper, validRequest)))
+                                              .content(asJsonString(validRequest)))
             .andExpect(status().isBadRequest())
             .andReturn();
 
