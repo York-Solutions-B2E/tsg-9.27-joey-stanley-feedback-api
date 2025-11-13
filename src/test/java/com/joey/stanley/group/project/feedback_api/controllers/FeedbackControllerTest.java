@@ -68,6 +68,7 @@ public class FeedbackControllerTest {
     }
 
     private static String API_ROOT = "/api/v1/feedback";
+    private static String API_FEEDBACK_PARAM = "/{feedbackId}";
     
     private static String FEEDBACK_ID_PATH = "$.id";
     private static String MEMBER_ID_PATH = "$.memberId";
@@ -152,15 +153,29 @@ public class FeedbackControllerTest {
         FeedbackResponse validResponse = FeedbackResponse.from(validFeedback);
 
         when(feedbackService.findFeedbackById(any(UUID.class)))
-                .thenReturn(Optional.of(validResponse));
+            .thenReturn(Optional.of(validResponse));
 
-        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + "/{feedbackId}", validUUID.toString()))
+        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + API_FEEDBACK_PARAM, validUUID.toString()))
             .andExpect(status().isOk())
             .andExpect(jsonPath(FEEDBACK_ID_PATH).doesNotExist())
             .andExpect(jsonPath(MEMBER_ID_PATH).doesNotExist())
             .andExpect(jsonPath(PROVIDER_NAME_PATH, is(MOCK_PROVIDER_NAME)))
             .andExpect(jsonPath(RATING_PATH, is(MOCK_RATING)))
             .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
+            .andReturn();
+
+        verify(feedbackService, times(1)).findFeedbackById(validUUID);
+    }
+
+    @Test
+    void testFindFeedbackByIdFailure() throws Exception {
+        UUID validUUID = UUID.randomUUID();
+
+        when(feedbackService.findFeedbackById(any(UUID.class)))
+            .thenReturn(Optional.empty());
+
+        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + API_FEEDBACK_PARAM, validUUID.toString()))
+            .andExpect(status().isNotFound())
             .andReturn();
 
         verify(feedbackService, times(1)).findFeedbackById(validUUID);
