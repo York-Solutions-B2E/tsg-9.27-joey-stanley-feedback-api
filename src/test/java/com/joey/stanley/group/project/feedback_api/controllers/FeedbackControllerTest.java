@@ -67,6 +67,14 @@ public class FeedbackControllerTest {
         return objectMapper.writeValueAsString(obj);
     }
 
+    private static String API_ROOT = "/api/v1/feedback";
+    
+    private static String FEEDBACK_ID_PATH = "$.id";
+    private static String MEMBER_ID_PATH = "$.memberId";
+    private static String PROVIDER_NAME_PATH = "$.providerName";
+    private static String RATING_PATH = "$.rating";
+    private static String COMMENT_PATH = "$.comment";
+    
     private static String MOCK_MEMBER_ID = "m-1337";
     private static String MOCK_PROVIDER_NAME = "Totally Real Doctor";
     private static int MOCK_RATING = 3;
@@ -106,14 +114,14 @@ public class FeedbackControllerTest {
         when(feedbackService.createFeedback(any(FeedbackRequest.class)))
                 .thenReturn(validFeedback);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/v1/feedback")
+        MvcResult mvcResult = mockMvc.perform(post(API_ROOT)
                                               .contentType(MediaType.APPLICATION_JSON)
                                               .content(asJsonString(objectMapper, validRequest)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.memberId", is(MOCK_MEMBER_ID)))
-            .andExpect(jsonPath("$.providerName", is(MOCK_PROVIDER_NAME)))
-            .andExpect(jsonPath("$.rating", is(MOCK_RATING)))
-            .andExpect(jsonPath("$.comment", is(MOCK_COMMENT)))
+            .andExpect(jsonPath(MEMBER_ID_PATH, is(MOCK_MEMBER_ID)))
+            .andExpect(jsonPath(PROVIDER_NAME_PATH, is(MOCK_PROVIDER_NAME)))
+            .andExpect(jsonPath(RATING_PATH, is(MOCK_RATING)))
+            .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
             .andReturn();
 
         verify(feedbackService, times(1)).createFeedback(any(FeedbackRequest.class));
@@ -127,7 +135,7 @@ public class FeedbackControllerTest {
         when(feedbackService.createFeedback(any(FeedbackRequest.class)))
                 .thenThrow(new ValidationException("Who do you think you are, with your knees halfway up your legs like that?"));
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/v1/feedback")
+        MvcResult mvcResult = mockMvc.perform(post(API_ROOT)
                                               .contentType(MediaType.APPLICATION_JSON)
                                               .content(asJsonString(objectMapper, validRequest)))
             .andExpect(status().isBadRequest())
@@ -146,12 +154,13 @@ public class FeedbackControllerTest {
         when(feedbackService.findFeedbackById(any(UUID.class)))
                 .thenReturn(Optional.of(validResponse));
 
-        MvcResult mvcResult = mockMvc.perform(get("/api/v1/feedback/{feedbackId}", validUUID.toString()))
+        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + "/{feedbackId}", validUUID.toString()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.memberId", is(MOCK_MEMBER_ID)))
-            .andExpect(jsonPath("$.providerName", is(MOCK_PROVIDER_NAME)))
-            .andExpect(jsonPath("$.rating", is(MOCK_RATING)))
-            .andExpect(jsonPath("$.comment", is(MOCK_COMMENT)))
+            .andExpect(jsonPath(FEEDBACK_ID_PATH).doesNotExist())
+            .andExpect(jsonPath(MEMBER_ID_PATH).doesNotExist())
+            .andExpect(jsonPath(PROVIDER_NAME_PATH, is(MOCK_PROVIDER_NAME)))
+            .andExpect(jsonPath(RATING_PATH, is(MOCK_RATING)))
+            .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
             .andReturn();
 
         verify(feedbackService, times(1)).findFeedbackById(validUUID);
