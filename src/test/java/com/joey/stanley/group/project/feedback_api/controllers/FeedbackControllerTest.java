@@ -22,6 +22,7 @@ import com.joey.stanley.group.project.feedback_api.dtos.FeedbackRequest;
 import com.joey.stanley.group.project.feedback_api.dtos.FeedbackResponse;
 import com.joey.stanley.group.project.feedback_api.entity.Feedback;
 import com.joey.stanley.group.project.feedback_api.services.FeedbackService;
+import com.joey.stanley.group.project.feedback_api.services.ValidationException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,15 @@ public class FeedbackControllerTest {
     private static int MOCK_RATING = 3;
     private static String MOCK_COMMENT = "Nice guy, but I'm suspicious about his license...";
 
+    private static FeedbackRequest createValidFeedbackRequest() {
+        FeedbackRequest request = new FeedbackRequest();
+        request.setMemberId(MOCK_MEMBER_ID);
+        request.setProviderName(MOCK_PROVIDER_NAME);
+        request.setRating(MOCK_RATING);
+        request.setComment(MOCK_COMMENT);
+        return request;
+    }
+    
     private static Feedback createValidFeedback() {
         Feedback mockFeedback = new Feedback();
         mockFeedback.setId(UUID.randomUUID());
@@ -90,6 +100,7 @@ public class FeedbackControllerTest {
 
     @Test
     void testCreateNewFeedbackSuccess() throws Exception {
+        FeedbackRequest validRequest = createValidFeedbackRequest();
         Feedback validFeedback = createValidFeedback();
         
         when(feedbackService.createFeedback(any(FeedbackRequest.class)))
@@ -97,7 +108,7 @@ public class FeedbackControllerTest {
 
         MvcResult mvcResult = mockMvc.perform(post("/api/v1/feedback")
                                               .contentType(MediaType.APPLICATION_JSON)
-                                              .content(asJsonString(objectMapper, validFeedback)))
+                                              .content(asJsonString(objectMapper, validRequest)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.memberId", is(MOCK_MEMBER_ID)))
             .andExpect(jsonPath("$.providerName", is(MOCK_PROVIDER_NAME)))
@@ -106,5 +117,43 @@ public class FeedbackControllerTest {
             .andReturn();
 
         verify(feedbackService, times(1)).createFeedback(any(FeedbackRequest.class));
+    }
+
+    @Test
+    void testCreateNewFeedbackFailure() throws Exception {
+        FeedbackRequest validRequest = createValidFeedbackRequest();
+        Feedback validFeedback = createValidFeedback();
+        
+        when(feedbackService.createFeedback(any(FeedbackRequest.class)))
+                .thenThrow(new ValidationException("Who do you think you are, with your knees halfway up your legs like that?"));
+
+        MvcResult mvcResult = mockMvc.perform(post("/api/v1/feedback")
+                                              .contentType(MediaType.APPLICATION_JSON)
+                                              .content(asJsonString(objectMapper, validRequest)))
+            .andExpect(status().isBadRequest())
+            .andReturn();
+
+        verify(feedbackService, times(1)).createFeedback(any(FeedbackRequest.class));
+    }
+
+    @Test
+    void testFindFeedbackByIdSuccess() throws Exception {
+        Feedback validFeedback = createValidFeedback();
+        UUID validUUID = UUID.randomUUID();
+        validFeedback.setId(validUUID);
+        FeedbackResponse validResponse = FeedbackResponse.from(validFeedback);
+
+        when(feedbackService.findFeedbackById(any(UUID.class)))
+                .thenReturn(Optional.of(validResponse));
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/feedback/{feedbackId}", validUUID.toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.memberId", is(MOCK_MEMBER_ID)))
+            .andExpect(jsonPath("$.providerName", is(MOCK_PROVIDER_NAME)))
+            .andExpect(jsonPath("$.rating", is(MOCK_RATING)))
+            .andExpect(jsonPath("$.comment", is(MOCK_COMMENT)))
+            .andReturn();
+
+        verify(feedbackService, times(1)).findFeedbackById(validUUID);
     }
 }
