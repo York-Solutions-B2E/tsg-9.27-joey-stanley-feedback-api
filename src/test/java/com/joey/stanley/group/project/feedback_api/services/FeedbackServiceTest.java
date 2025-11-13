@@ -206,7 +206,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    void findFeedbackByMemberIdSuccessTest() throws Exception {
+    void findFeedbackByMemberIdNonZeroSuccessTest() throws Exception {
         //TODO: Implement a test which verifies a non-zero-length list of
         //      FeedbackResponse is returned, when a given memberId
         //      successfully pulls a non-zero-length list of Feedback items
@@ -216,7 +216,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    void findFeedbackByMemberIdSuccessTest() throws Exception {
+    void findFeedbackByMemberIdEmptySuccessTest() throws Exception {
         //TODO: Implement a test which verifies an empty list is returned,
         //      when a given memberId pulls an empty list of Feedback items
         //      from the repository.
