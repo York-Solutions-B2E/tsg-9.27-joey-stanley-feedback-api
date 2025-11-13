@@ -39,7 +39,7 @@ public class FeedbackService {
         if (request.getRating() < 1 || request.getRating() > 5) {
             throw new ValidationException("Field 'rating' must be an integer between 1 and 5");
         }
-        if (request.getComment().length() > 200) {
+        if (request.getComment() != null && request.getComment().length() > 200) {
             throw new ValidationException("Field 'comment' must be ≤ 200 characters");
         }
         //Save to DB
@@ -50,7 +50,7 @@ public class FeedbackService {
         FeedbackSubmittedEvent event = FeedbackSubmittedEvent.fromEntityToEvent(savedFeedback);
         feedbackEventPublisher.publishFeedbackEvent(event);
 
-        return feedback;
+        return savedFeedback;
     }
 
 
