@@ -51,7 +51,6 @@ public class FeedbackServiceTest {
 
         Feedback expectedFeedback = validRequest.toEntity();
         expectedFeedback.setId(UUID.randomUUID());
-        expectedFeedback.setSubmittedAt(OffsetDateTime.now());
 
         when(feedbackRepository.save(any(Feedback.class)))
             .thenReturn(expectedFeedback);
@@ -63,6 +62,10 @@ public class FeedbackServiceTest {
 
         assertNotNull(feedback);
         assertNotNull(feedback.getId());
+        assertEquals(MOCK_MEMBER_ID, feedback.getMemberId());
+        assertEquals(MOCK_PROVIDER_NAME, feedback.getProviderName());
+        assertEquals(MOCK_RATING, feedback.getRating());
+        assertEquals(MOCK_COMMENT, feedback.getComment());
         assertNotNull(feedback.getSubmittedAt());
     }
 
@@ -73,7 +76,7 @@ public class FeedbackServiceTest {
 
         String foundHead = msg.substring(0, head.length());
 
-        assertEquals(foundHead, head, errMsg);
+        assertEquals(head, foundHead, errMsg);
     }
 
     private static void assertFieldIsAddressed(ValidationException ex, String fieldName) throws Exception {

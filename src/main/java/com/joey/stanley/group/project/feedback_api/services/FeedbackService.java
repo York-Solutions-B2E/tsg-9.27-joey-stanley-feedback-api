@@ -1,5 +1,6 @@
 package com.joey.stanley.group.project.feedback_api.services;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +46,12 @@ public class FeedbackService {
         //Save to DB
         Feedback feedback = request.toEntity();
         Feedback savedFeedback = feedbackRepository.save(feedback);
+
+        //Sometimes the DB doesn't flush immediately, so
+        //make sure something is sent back for a timestamp
+        if (savedFeedback.getSubmittedAt() == null) {
+            savedFeedback.setSubmittedAt(OffsetDateTime.now());
+        }
 
         //Create event object & send to Kafka
         FeedbackSubmittedEvent event = FeedbackSubmittedEvent.fromEntityToEvent(savedFeedback);
