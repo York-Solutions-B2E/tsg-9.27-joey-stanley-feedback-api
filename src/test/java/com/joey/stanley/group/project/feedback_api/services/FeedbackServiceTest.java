@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,7 +52,7 @@ public class FeedbackServiceTest {
 
         Feedback expectedFeedback = validRequest.toEntity();
         expectedFeedback.setId(UUID.randomUUID());
-        expectedFeedback.setSubmittedAt(OffsetDateTime.now());
+        expectedFeedback.setSubmittedAt(Instant.now());
 
         when(feedbackRepository.saveAndFlush(any(Feedback.class)))
             .thenReturn(expectedFeedback);
@@ -187,7 +188,7 @@ public class FeedbackServiceTest {
         expectedFeedback.setProviderName(MOCK_PROVIDER_NAME);
         expectedFeedback.setRating(MOCK_RATING);
         expectedFeedback.setComment(MOCK_COMMENT);
-        expectedFeedback.setSubmittedAt(OffsetDateTime.now());
+        expectedFeedback.setSubmittedAt(Instant.now());
 
         when(feedbackRepository.findById(any(UUID.class)))
             .thenReturn(Optional.of(expectedFeedback));
