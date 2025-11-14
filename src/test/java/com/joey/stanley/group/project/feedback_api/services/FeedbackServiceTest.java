@@ -51,22 +51,23 @@ public class FeedbackServiceTest {
 
         Feedback expectedFeedback = validRequest.toEntity();
         expectedFeedback.setId(UUID.randomUUID());
+        expectedFeedback.setSubmittedAt(OffsetDateTime.now());
 
-        when(feedbackRepository.save(any(Feedback.class)))
+        when(feedbackRepository.saveAndFlush(any(Feedback.class)))
             .thenReturn(expectedFeedback);
 
         Feedback feedback = feedbackService.createFeedback(validRequest);
 
-        verify(feedbackRepository).save(any(Feedback.class));
+        verify(feedbackRepository).saveAndFlush(any(Feedback.class));
         verify(feedbackEventPublisher).publishFeedbackEvent(any(FeedbackSubmittedEvent.class));
 
-        assertNotNull(feedback);
-        assertNotNull(feedback.getId());
-        assertEquals(MOCK_MEMBER_ID, feedback.getMemberId());
-        assertEquals(MOCK_PROVIDER_NAME, feedback.getProviderName());
-        assertEquals(MOCK_RATING, feedback.getRating());
-        assertEquals(MOCK_COMMENT, feedback.getComment());
-        assertNotNull(feedback.getSubmittedAt());
+        assertNotNull(feedback, "Feedback after save is null");
+        assertNotNull(feedback.getId(), "Feedback ID after save is null");
+        assertEquals(MOCK_MEMBER_ID, feedback.getMemberId(), "memberId mismatch after save");
+        assertEquals(MOCK_PROVIDER_NAME, feedback.getProviderName(), "providerName mismatch after save");
+        assertEquals(MOCK_RATING, feedback.getRating(), "rating mismatch after save");
+        assertEquals(MOCK_COMMENT, feedback.getComment(), "comment mismatch after save");
+        assertNotNull(feedback.getSubmittedAt(), "Submission time is null");
     }
 
     private static void assertStartsWith(String msg, String head) throws Exception {
@@ -215,6 +216,8 @@ public class FeedbackServiceTest {
         //      successfully pulls a non-zero-length list of Feedback items
         //      from the repository.
         //
+        //      Remember that we are using saveAndFlush() instead of save()
+        //
         // practice assignment for Stanley
     }
 
@@ -223,6 +226,8 @@ public class FeedbackServiceTest {
         //TODO: Implement a test which verifies an empty list is returned,
         //      when a given memberId pulls an empty list of Feedback items
         //      from the repository.
+        //
+        //      Remember that we are using saveAndFlush() instead of save()
         //
         // practice assignment for Stanley
     }
