@@ -5,4 +5,5 @@ include:
 
 networks:
   stanjgcnet:
-    driver: bridge
+    external: true
+    driver: bridged

@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class FeedbackControllerTest {
         mockFeedback.setProviderName(MOCK_PROVIDER_NAME);
         mockFeedback.setRating(MOCK_RATING);
         mockFeedback.setComment(MOCK_COMMENT);
-        mockFeedback.setSubmittedAt(OffsetDateTime.now());
+        mockFeedback.setSubmittedAt(Instant.now());
         return mockFeedback;
     }
     

@@ -6,6 +6,7 @@ import lombok.Data;
 import org.hibernate.annotations.Check;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -32,5 +33,5 @@ public class Feedback {
 
     @CreationTimestamp
     @Column(nullable = false)
-    private OffsetDateTime submittedAt;
+    private Instant submittedAt;
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 
 @Getter
@@ -16,7 +17,7 @@ public class FeedbackSubmittedEvent {
     private String providerName;
     private int rating;
     private String comment;
-    private OffsetDateTime submittedAt;
+    private Instant submittedAt;
     private int schemaVersion = 1;
 
     public static FeedbackSubmittedEvent fromEntityToEvent(Feedback feedback) {
