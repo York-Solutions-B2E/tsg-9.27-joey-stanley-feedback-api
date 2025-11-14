@@ -1,5 +1,6 @@
 package com.joey.stanley.group.project.feedback_api.services;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,18 +40,24 @@ public class FeedbackService {
         if (request.getRating() < 1 || request.getRating() > 5) {
             throw new ValidationException("Field 'rating' must be an integer between 1 and 5");
         }
-        if (request.getComment().length() > 200) {
+        if (request.getComment() != null && request.getComment().length() > 200) {
             throw new ValidationException("Field 'comment' must be ≤ 200 characters");
         }
         //Save to DB
         Feedback feedback = request.toEntity();
         Feedback savedFeedback = feedbackRepository.save(feedback);
 
+        //Sometimes the DB doesn't flush immediately, so
+        //make sure something is sent back for a timestamp
+        if (savedFeedback.getSubmittedAt() == null) {
+            savedFeedback.setSubmittedAt(OffsetDateTime.now());
+        }
+
         //Create event object & send to Kafka
         FeedbackSubmittedEvent event = FeedbackSubmittedEvent.fromEntityToEvent(savedFeedback);
         feedbackEventPublisher.publishFeedbackEvent(event);
 
-        return feedback;
+        return savedFeedback;
     }
 
 

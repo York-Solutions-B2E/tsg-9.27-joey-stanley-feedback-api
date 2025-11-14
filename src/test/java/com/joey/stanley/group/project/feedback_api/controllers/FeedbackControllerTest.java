@@ -12,6 +12,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,6 +58,7 @@ public class FeedbackControllerTest {
 
     private static String API_ROOT = "/api/v1/feedback";
     private static String API_FEEDBACK_PARAM = "/{feedbackId}";
+    private static String API_MEMBER_PARAM = "?memberId=";
     
     private static String FEEDBACK_ID_PATH = "$.id";
     private static String MEMBER_ID_PATH = "$.memberId";
@@ -166,5 +169,24 @@ public class FeedbackControllerTest {
             .andReturn();
 
         verify(feedbackService, times(1)).findFeedbackById(validUUID);
+    }
+    
+    @Test
+    void testFindFeedbackByMemberIdSuccess() throws Exception {
+        Feedback validFeedback = createValidFeedback();
+        FeedbackResponse validResponse = FeedbackResponse.from(validFeedback);
+        List<FeedbackResponse> responseList = new ArrayList<>();
+        responseList.add(validResponse);
+
+        when(feedbackService.findFeedbackByMemberId(any(String.class)))
+            .thenReturn(responseList);
+
+        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + API_MEMBER_PARAM + MOCK_MEMBER_ID))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andReturn();
+
+        verify(feedbackService, times(1)).findFeedbackByMemberId(MOCK_MEMBER_ID);
     }
 }
