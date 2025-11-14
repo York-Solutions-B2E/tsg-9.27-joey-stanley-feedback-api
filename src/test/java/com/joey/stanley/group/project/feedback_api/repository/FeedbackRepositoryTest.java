@@ -53,15 +53,14 @@ public class FeedbackRepositoryTest {
         assertEquals(rawFeedback.getProviderName(), cookedFeedback.getProviderName());
         assertEquals(rawFeedback.getRating(), cookedFeedback.getRating());
         assertEquals(rawFeedback.getComment(), cookedFeedback.getComment());
-        // Not testing submission time, because the database doesn't always
-        // populate that immediately, so there's no way to reliably test this.
+        assertNotNull(cookedFeedback.getSubmittedAt());
     }
 
     @Test
     void saveSuccessTest() throws Exception {
         Feedback rawFeedback = createRawFeedback();
 
-        Feedback cookedFeedback = feedbackRepository.save(rawFeedback);
+        Feedback cookedFeedback = feedbackRepository.saveAndFlush(rawFeedback);
 
         assertNotNull(cookedFeedback);
         comparedRawAndCookedFeedback(rawFeedback, cookedFeedback);
@@ -71,7 +70,7 @@ public class FeedbackRepositoryTest {
     void recallSuccessTest() throws Exception {
         Feedback rawFeedback = createRawFeedback();
 
-        feedbackRepository.save(rawFeedback);
+        feedbackRepository.saveAndFlush(rawFeedback);
 
         Optional<Feedback> packedCookedFeedback = feedbackRepository.findById(rawFeedback.getId());
 
@@ -89,8 +88,8 @@ public class FeedbackRepositoryTest {
         Feedback rawFeedbackA = testSet[0];
         Feedback rawFeedbackB = testSet[1];
 
-        feedbackRepository.save(rawFeedbackA);
-        feedbackRepository.save(rawFeedbackB);
+        feedbackRepository.saveAndFlush(rawFeedbackA);
+        feedbackRepository.saveAndFlush(rawFeedbackB);
 
         List<Feedback> recalls = feedbackRepository.findByMemberId(MOCK_MEMBER_ID);
 
