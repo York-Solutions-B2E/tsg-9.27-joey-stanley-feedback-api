@@ -46,8 +46,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @WebMvcTest(value = FeedbackController.class)
 public class FeedbackControllerTest {
 
-    // Technically deprecated, but I can't find docs for a working
-    // arrangement which simply uses `@Mock` instead.
     @MockitoBean
     private FeedbackService feedbackService;
 
@@ -117,7 +115,7 @@ public class FeedbackControllerTest {
             .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
             .andReturn();
 
-        verify(feedbackService, times(1)).createFeedback(any(FeedbackRequest.class));
+        verify(feedbackService).createFeedback(any(FeedbackRequest.class));
     }
 
     @Test
@@ -134,7 +132,7 @@ public class FeedbackControllerTest {
             .andExpect(status().isBadRequest())
             .andReturn();
 
-        verify(feedbackService, times(1)).createFeedback(any(FeedbackRequest.class));
+        verify(feedbackService).createFeedback(any(FeedbackRequest.class));
     }
 
     @Test
@@ -156,7 +154,7 @@ public class FeedbackControllerTest {
             .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
             .andReturn();
 
-        verify(feedbackService, times(1)).findFeedbackById(validUUID);
+        verify(feedbackService).findFeedbackById(validUUID);
     }
 
     @Test
@@ -170,7 +168,7 @@ public class FeedbackControllerTest {
             .andExpect(status().isNotFound())
             .andReturn();
 
-        verify(feedbackService, times(1)).findFeedbackById(validUUID);
+        verify(feedbackService).findFeedbackById(validUUID);
     }
     
     @Test
@@ -189,6 +187,6 @@ public class FeedbackControllerTest {
             .andExpect(jsonPath("$.length()").value(1))
             .andReturn();
 
-        verify(feedbackService, times(1)).findFeedbackByMemberId(MOCK_MEMBER_ID);
+        verify(feedbackService).findFeedbackByMemberId(MOCK_MEMBER_ID);
     }
 }
