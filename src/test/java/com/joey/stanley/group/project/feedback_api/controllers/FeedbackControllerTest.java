@@ -38,6 +38,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -47,7 +48,7 @@ public class FeedbackControllerTest {
 
     // Technically deprecated, but I can't find docs for a working
     // arrangement which simply uses `@Mock` instead.
-    @MockBean
+    @MockitoBean
     private FeedbackService feedbackService;
 
     @Autowired
