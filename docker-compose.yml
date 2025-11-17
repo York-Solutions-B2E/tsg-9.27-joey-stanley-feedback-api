@@ -4,7 +4,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/test_database
       SPRING_DATASOURCE_USERNAME: postgres
@@ -17,6 +20,11 @@ services:
     command: mvn clean package spring-boot:run
     networks:
       - stanjgcnet
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "-I", "http://localhost:8080/api/v1/health", "&&", "exit 0", "||", "exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   kafka:
     image: confluentinc/confluent-local:latest
@@ -46,9 +54,9 @@ services:
       - stanjgcnet
     healthcheck:
       test: [ "CMD", "bash", "-lc", "kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 12
+      retries: 15
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -60,6 +68,9 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
     networks:
       - stanjgcnet
+    depends_on:
+      kafka:
+        condition: service_healthy
 
   db:
     image: postgres:latest
@@ -71,6 +82,14 @@ services:
       - "5432:5432"
     networks:
       - stanjgcnet
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "test_database" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    depends_on:
+      kafka:
+        condition: service_healthy
       
 volumes:
   kafka-data:

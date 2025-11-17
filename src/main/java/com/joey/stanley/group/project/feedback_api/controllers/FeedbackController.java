@@ -71,7 +71,11 @@ public class FeedbackController {
     }
 
     @GetMapping(value="/health")
-    public ResponseEntity<Void> getServiceHealth() {
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<String> getServiceHealth() {
+        // Do not report an online service while testing
+        if (System.getProperty("spring.test") != null) {
+            return ResponseEntity.internalServerError().body("down");
+        }
+        return ResponseEntity.ok("up");
     }
 }
