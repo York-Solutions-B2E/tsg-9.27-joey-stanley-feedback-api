@@ -1,0 +1,7 @@
+include:
+  - path: ./docker-compose.yml
+
+networks:
+  stanjgcnet:
+    driver: bridge
+    name: stanjgcnet

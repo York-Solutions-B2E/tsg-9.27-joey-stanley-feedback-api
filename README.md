@@ -25,6 +25,14 @@ cd tsg-9.27-joey-stanley-feedback-api
 docker compose -f masterswitch.yml up
 ```
 
+## Run API In Isolation
+
+To run *just* the API (spring boot, kafka, postgres), run the following:
+
+```bash
+docker compose -f solo.yml up
+```
+
 ## Tests
 
 All tests are run within the api and consumer docker containers, as part of the spin-up process.
