@@ -21,7 +21,7 @@ services:
     networks:
       - stanjgcnet
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "-I", "http://localhost:8080/api/v1/health", "&&", "exit 0", "||", "exit 1" ]
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/actuator/health"]
       interval: 5s
       timeout: 5s
       retries: 30

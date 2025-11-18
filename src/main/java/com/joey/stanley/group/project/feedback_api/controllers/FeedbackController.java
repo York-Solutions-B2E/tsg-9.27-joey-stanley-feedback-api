@@ -6,6 +6,12 @@ import com.joey.stanley.group.project.feedback_api.dtos.FeedbackResponse;
 import com.joey.stanley.group.project.feedback_api.services.FeedbackService;
 import com.joey.stanley.group.project.feedback_api.services.ValidationException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,6 +44,28 @@ public class FeedbackController {
         this.feedbackService = feedbackService;
     }
 
+    @Operation(
+            summary = "Create new feedback",
+            description = "Creates a feedback entry for a member, and returns the created feedback object and response."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Feedback successfully created",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = FeedbackResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request: validation failed",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @PostMapping(value="/feedback")
     public ResponseEntity<Object> createNewFeedback(@RequestBody FeedbackRequest feedbackRequest) {
         try {
@@ -49,6 +77,24 @@ public class FeedbackController {
         }
     }
 
+    @Operation(
+            summary = "Get feedback by ID",
+            description = "Fetch a single feedback entry using its ID."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Feedback found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = FeedbackResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Feedback not found"
+            )
+    })
     @GetMapping(value="/feedback/{feedbackId}")
     public ResponseEntity<FeedbackResponse> findFeedbackById(@PathVariable UUID feedbackId) {
         Optional<FeedbackResponse> response = feedbackService.findFeedbackById(feedbackId);
@@ -60,6 +106,22 @@ public class FeedbackController {
         return ResponseEntity.notFound().build();
     }
 
+    @Operation(
+            summary = "Get feedback by member ID",
+            description = "Returns a list of all feedback entries submitted by the specified memberId."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of feedback entries",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(
+                                    schema = @Schema(implementation = FeedbackResponse.class)
+                            )
+                    )
+            )
+    })
     @GetMapping(value="/feedback")
     public ResponseEntity<List<FeedbackResponse>> findFeedbackByMemberId(@RequestParam String memberId) {
         List<FeedbackResponse> responses = feedbackService.findFeedbackByMemberId(memberId);
@@ -67,12 +129,4 @@ public class FeedbackController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping(value="/health")
-    public ResponseEntity<String> getServiceHealth() {
-        // Do not report an online service while testing
-        if (System.getProperty("spring.test") != null) {
-            return ResponseEntity.internalServerError().body("down");
-        }
-        return ResponseEntity.ok("up");
-    }
 }
