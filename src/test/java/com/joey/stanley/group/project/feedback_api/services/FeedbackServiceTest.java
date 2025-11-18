@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +23,6 @@ import com.joey.stanley.group.project.feedback_api.repository.FeedbackRepository
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
@@ -43,47 +42,41 @@ public class FeedbackServiceTest {
     private static int MOCK_RATING = 3;
     private static String MOCK_COMMENT = "Nice guy, but I'm suspicious about his license...";
 
+    //Save to Repo, Publish an event, & return saved feedback entity
     @Test
-    void createFeedbackSuccessTest() throws Exception {
+    void createFeedback_returnsFeedbackResponse_whenRequestIsValid() throws Exception {
+        //build valid request
         FeedbackRequest validRequest = new FeedbackRequest();
         validRequest.setMemberId(MOCK_MEMBER_ID);
         validRequest.setProviderName(MOCK_PROVIDER_NAME);
         validRequest.setRating(MOCK_RATING);
         validRequest.setComment(MOCK_COMMENT);
 
+        //build object DB should return
         Feedback expectedFeedback = validRequest.toEntity();
         expectedFeedback.setId(UUID.randomUUID());
         expectedFeedback.setSubmittedAt(Instant.now());
 
+        //Stub repo. "If service calls saveAndFlush with ANY feedback obj, then return expectedFeedback"
         when(feedbackRepository.saveAndFlush(any(Feedback.class)))
             .thenReturn(expectedFeedback);
 
-        Feedback feedback = feedbackService.createFeedback(validRequest);
+        //Call actual service method we're testing
+        FeedbackResponse feedbackResponse = feedbackService.createFeedback(validRequest);
+        //Feedback feedback = feedbackService.createFeedback(validRequest);
 
+        //Verify in logs that these methods were actually called
         verify(feedbackRepository).saveAndFlush(any(Feedback.class));
         verify(feedbackEventPublisher).publishFeedbackEvent(any(FeedbackSubmittedEvent.class));
 
-        assertNotNull(feedback, "Feedback after save is null");
-        assertNotNull(feedback.getId(), "Feedback ID after save is null");
-        assertEquals(MOCK_MEMBER_ID, feedback.getMemberId(), "memberId mismatch after save");
-        assertEquals(MOCK_PROVIDER_NAME, feedback.getProviderName(), "providerName mismatch after save");
-        assertEquals(MOCK_RATING, feedback.getRating(), "rating mismatch after save");
-        assertEquals(MOCK_COMMENT, feedback.getComment(), "comment mismatch after save");
-        assertNotNull(feedback.getSubmittedAt(), "Submission time is null");
-    }
-
-    private static void assertStartsWith(String msg, String head) throws Exception {
-        String errMsg = "Wrong error message thrown; expected to start with: " + head;
-        assertNotNull(msg, errMsg);
-        assertTrue(msg.length() >= head.length(), errMsg);
-
-        String foundHead = msg.substring(0, head.length());
-
-        assertEquals(head, foundHead, errMsg);
-    }
-
-    private static void assertFieldIsAddressed(ValidationException ex, String fieldName) throws Exception {
-        assertStartsWith(ex.getMessage(), "Field '" + fieldName + "' ");
+        //Confirming feedback object matches what we expect
+        assertNotNull(feedbackResponse, "Feedback after save is null");
+        assertNotNull(feedbackResponse.getId(), "Feedback ID after save is null");
+        assertEquals(MOCK_MEMBER_ID, feedbackResponse.getMemberId(), "memberId mismatch after save");
+        assertEquals(MOCK_PROVIDER_NAME, feedbackResponse.getProviderName(), "providerName mismatch after save");
+        assertEquals(MOCK_RATING, feedbackResponse.getRating(), "rating mismatch after save");
+        assertEquals(MOCK_COMMENT, feedbackResponse.getComment(), "comment mismatch after save");
+        assertNotNull(feedbackResponse.getSubmittedAt(), "Submission time is null");
     }
 
     // Creates a non-whitespace junk string of some length
@@ -95,94 +88,98 @@ public class FeedbackServiceTest {
         return junk;
     }
 
-    private void testFieldException(FeedbackRequest invalidRequest, String fieldName) throws Exception {
+    private void assertValidationException(FeedbackRequest feedbackRequest, String fieldName) {
         try {
-            Feedback feedback = feedbackService.createFeedback(invalidRequest);
-            fail("This should have thrown a ValidationException");
+            feedbackService.createFeedback(feedbackRequest);
+            fail("Expected ValidationException to be thrown");
         } catch (ValidationException ex) {
-            assertFieldIsAddressed(ex, fieldName);
+            assertNotNull(ex.getMessage(), "Validation Exception is null");
+            assertTrue(
+                    ex.getMessage().startsWith("Field '" + fieldName + "' "),
+                    "Wrong error message thrown; expected to start with: Field '" + fieldName + "' "
+            );
         }
     }
 
     @Test
-    void createFeedbackNullMemberFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenMemberIdIsNull() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(null);
         invalidRequest.setProviderName(MOCK_PROVIDER_NAME);
         invalidRequest.setRating(MOCK_RATING);
         invalidRequest.setComment(MOCK_COMMENT);
 
-        testFieldException(invalidRequest, "memberId");
+        assertValidationException(invalidRequest, "memberId");
     }
 
     @Test
-    void createFeedbackLongMemberFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenMemberIdExceedsMaxLength() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(createJunk(37));
         invalidRequest.setProviderName(MOCK_PROVIDER_NAME);
         invalidRequest.setRating(MOCK_RATING);
         invalidRequest.setComment(MOCK_COMMENT);
 
-        testFieldException(invalidRequest, "memberId");
+        assertValidationException(invalidRequest, "memberId");
     }
 
     @Test
-    void createFeedbackNullProviderFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenProviderNameIsNull() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(MOCK_MEMBER_ID);
         invalidRequest.setProviderName(null);
         invalidRequest.setRating(MOCK_RATING);
         invalidRequest.setComment(MOCK_COMMENT);
 
-        testFieldException(invalidRequest, "providerName");
+        assertValidationException(invalidRequest, "providerName");
     }
 
     @Test
-    void createFeedbackLongProviderFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenProviderNameExceedsMaxLength() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(MOCK_MEMBER_ID);
         invalidRequest.setProviderName(createJunk(81));
         invalidRequest.setRating(MOCK_RATING);
         invalidRequest.setComment(MOCK_COMMENT);
 
-        testFieldException(invalidRequest, "providerName");
+        assertValidationException(invalidRequest, "providerName");
     }
 
     @Test
-    void createFeedbackLowRatingFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenRatingIsBelowMin() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(MOCK_MEMBER_ID);
         invalidRequest.setProviderName(MOCK_PROVIDER_NAME);
         invalidRequest.setRating(0);
         invalidRequest.setComment(MOCK_COMMENT);
 
-        testFieldException(invalidRequest, "rating");
+        assertValidationException(invalidRequest, "rating");
     }
 
     @Test
-    void createFeedbackHighRatingFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenRatingIsAboveMax() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(MOCK_MEMBER_ID);
         invalidRequest.setProviderName(MOCK_PROVIDER_NAME);
         invalidRequest.setRating(6);
         invalidRequest.setComment(MOCK_COMMENT);
 
-        testFieldException(invalidRequest, "rating");
+        assertValidationException(invalidRequest, "rating");
     }
 
     @Test
-    void createFeedbackLongCommentFailureTest() throws Exception {
+    void createFeedback_throwsValidationException_whenCommentExceedsMaxLength() throws Exception {
         FeedbackRequest invalidRequest = new FeedbackRequest();
         invalidRequest.setMemberId(MOCK_MEMBER_ID);
         invalidRequest.setProviderName(MOCK_PROVIDER_NAME);
         invalidRequest.setRating(MOCK_RATING);
         invalidRequest.setComment(createJunk(201));
 
-        testFieldException(invalidRequest, "comment");
+        assertValidationException(invalidRequest, "comment");
     }
 
     @Test
-    void findFeedbackByIdSuccessTest() throws Exception {
+    void findFeedbackById_returnsFeedbackResponse_whenFeedbackExists() throws Exception {
         Feedback expectedFeedback = new Feedback();
         expectedFeedback.setId(UUID.randomUUID());
         expectedFeedback.setMemberId(MOCK_MEMBER_ID);
@@ -201,7 +198,7 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    void findFeedbackByIdFailureTest() throws Exception {
+    void findFeedbackById_returnsEmptyOptional_whenFeedbackDoesNotExist() throws Exception {
         when(feedbackRepository.findById(any(UUID.class)))
             .thenReturn(Optional.empty());
 
@@ -212,25 +209,47 @@ public class FeedbackServiceTest {
     }
 
     @Test
-    void findFeedbackByMemberIdNonZeroSuccessTest() throws Exception {
-        //TODO: Implement a test which verifies a non-zero-length list of
-        //      FeedbackResponse is returned, when a given memberId
-        //      successfully pulls a non-zero-length list of Feedback items
-        //      from the repository.
-        //
-        //      Remember that we are using saveAndFlush() instead of save()
-        //
-        // practice assignment for Stanley
+    void findFeedbackByMemberId_returnsNonEmptyList_whenFeedbackExistsForMember() throws Exception {
+        //Arrange (Create mock feedback that would be coming from DB)
+        Feedback mockFeedback = new Feedback();
+        mockFeedback.setId(UUID.randomUUID());
+        mockFeedback.setMemberId(MOCK_MEMBER_ID);
+        mockFeedback.setProviderName(MOCK_PROVIDER_NAME);
+        mockFeedback.setRating(MOCK_RATING);
+        mockFeedback.setComment(MOCK_COMMENT);
+        mockFeedback.setSubmittedAt(Instant.now());
+
+        //Arrange (Should return a non-empty list)
+        when(feedbackRepository.findByMemberId(MOCK_MEMBER_ID))
+                .thenReturn(List.of(mockFeedback));
+
+        //Act (call service)
+        List<FeedbackResponse> result = feedbackService.findFeedbackByMemberId(MOCK_MEMBER_ID);
+
+        //Assert(Verify 1 result, and that it matches)
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(mockFeedback.getRating(), result.get(0).getRating());
+        assertEquals(mockFeedback.getProviderName(), result.get(0).getProviderName());
+        assertEquals(mockFeedback.getComment(), result.get(0).getComment());
+
+        verify(feedbackRepository).findByMemberId(MOCK_MEMBER_ID);
     }
 
     @Test
-    void findFeedbackByMemberIdEmptySuccessTest() throws Exception {
-        //TODO: Implement a test which verifies an empty list is returned,
-        //      when a given memberId pulls an empty list of Feedback items
-        //      from the repository.
-        //
-        //      Remember that we are using saveAndFlush() instead of save()
-        //
-        // practice assignment for Stanley
+    void findFeedbackByMemberId_returnsEmptyList_whenNoFeedbackExistsForMember() throws Exception {
+        //Arrange (empty list)
+        when(feedbackRepository.findByMemberId(MOCK_MEMBER_ID))
+                .thenReturn(List.of());
+
+        //Act (call service)
+        List<FeedbackResponse> result = feedbackService.findFeedbackByMemberId(MOCK_MEMBER_ID);
+
+        //Assert (verify result is empty)
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(feedbackRepository).findByMemberId(MOCK_MEMBER_ID);
     }
+
+
 }

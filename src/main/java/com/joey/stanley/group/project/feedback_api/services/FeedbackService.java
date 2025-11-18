@@ -29,7 +29,7 @@ public class FeedbackService {
         this.feedbackEventPublisher = feedbackEventPublisher;
     }
 
-    public Feedback createFeedback(FeedbackRequest request) throws ValidationException {
+    public FeedbackResponse createFeedback(FeedbackRequest request) throws ValidationException {
         //Validation
         if(request.getMemberId() == null || request.getMemberId().length() > 36){
             throw new ValidationException("Field 'memberId' must be ≤ 36 characters or not null");
@@ -43,15 +43,16 @@ public class FeedbackService {
         if (request.getComment() != null && request.getComment().length() > 200) {
             throw new ValidationException("Field 'comment' must be ≤ 200 characters");
         }
-        //Save to DB
+        //Covert from DTO to entity, back to DTO
         Feedback feedback = request.toEntity();
         Feedback savedFeedback = feedbackRepository.saveAndFlush(feedback);
+        FeedbackResponse feedbackResponse = FeedbackResponse.from(savedFeedback);
 
         //Create event object & send to Kafka
         FeedbackSubmittedEvent event = FeedbackSubmittedEvent.fromEntityToEvent(savedFeedback);
         feedbackEventPublisher.publishFeedbackEvent(event);
 
-        return savedFeedback;
+        return feedbackResponse;
     }
 
 
