@@ -57,7 +57,7 @@ public class FeedbackRepositoryTest {
     }
 
     @Test
-    void saveSuccessTest() throws Exception {
+    void repository_success_createAndSave() throws Exception {
         Feedback rawFeedback = createRawFeedback();
 
         Feedback cookedFeedback = feedbackRepository.saveAndFlush(rawFeedback);
@@ -67,7 +67,7 @@ public class FeedbackRepositoryTest {
     }
 
     @Test
-    void recallSuccessTest() throws Exception {
+    void repository_success_createAndSaveAndFind() throws Exception {
         Feedback rawFeedback = createRawFeedback();
 
         feedbackRepository.saveAndFlush(rawFeedback);
@@ -83,7 +83,7 @@ public class FeedbackRepositoryTest {
     }
 
     @Test
-    void findFeedbackByMemberIdNonZeroSuccessTest() throws Exception {
+    void repository_returnTwoItems_findMemberByFeedbackId() throws Exception {
         Feedback[] testSet = createRawFeedbackSet();
         Feedback rawFeedbackA = testSet[0];
         Feedback rawFeedbackB = testSet[1];
@@ -121,7 +121,7 @@ public class FeedbackRepositoryTest {
     }
 
     @Test
-    void findFeedbackByMemberIdEmptySuccessTest() throws Exception {
+    void repository_returnEmptyList_findMemberByFeedbackId() throws Exception {
         List<Feedback> recalls = feedbackRepository.findByMemberId("NotAMember");
 
         assertEquals(0, recalls.size());
