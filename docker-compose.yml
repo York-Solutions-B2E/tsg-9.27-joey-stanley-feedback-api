@@ -94,8 +94,4 @@ services:
 volumes:
   kafka-data:
   maven-cache:
-    
-networks:
-  stanjgcnet:
-    driver: bridge
-    name: stanjgcnet
+
