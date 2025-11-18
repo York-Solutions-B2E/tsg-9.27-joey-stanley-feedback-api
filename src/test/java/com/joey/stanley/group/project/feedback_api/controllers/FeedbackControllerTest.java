@@ -1,7 +1,6 @@
 package com.joey.stanley.group.project.feedback_api.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,10 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,22 +23,12 @@ import com.joey.stanley.group.project.feedback_api.entity.Feedback;
 import com.joey.stanley.group.project.feedback_api.services.FeedbackService;
 import com.joey.stanley.group.project.feedback_api.services.ValidationException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @WebMvcTest(value = FeedbackController.class)
 public class FeedbackControllerTest {
@@ -52,6 +39,7 @@ public class FeedbackControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    //serializing a Object into a JSON string
     private static String asJsonString(Object obj) throws JsonProcessingException {
         return (new ObjectMapper()).writeValueAsString(obj);
     }
@@ -93,50 +81,46 @@ public class FeedbackControllerTest {
     
     private static FeedbackResponse createValidResponse() {
         Feedback mockFeedback = createValidFeedback();
-        FeedbackResponse response = FeedbackResponse.from(mockFeedback);
-        return response;
+        return FeedbackResponse.from(mockFeedback);
     }
 
     @Test
-    void testCreateNewFeedbackSuccess() throws Exception {
+    void createNewFeedback_returnsCreatedResponse_whenRequestIsValid() throws Exception {
         FeedbackRequest validRequest = createValidFeedbackRequest();
-        Feedback validFeedback = createValidFeedback();
+        FeedbackResponse validResponse = createValidResponse();
         
         when(feedbackService.createFeedback(any(FeedbackRequest.class)))
-                .thenReturn(validFeedback);
+                .thenReturn(validResponse);
 
-        MvcResult mvcResult = mockMvc.perform(post(API_ROOT)
-                                              .contentType(MediaType.APPLICATION_JSON)
-                                              .content(asJsonString(validRequest)))
+        mockMvc.perform(post(API_ROOT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(validRequest)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath(MEMBER_ID_PATH, is(MOCK_MEMBER_ID)))
             .andExpect(jsonPath(PROVIDER_NAME_PATH, is(MOCK_PROVIDER_NAME)))
             .andExpect(jsonPath(RATING_PATH, is(MOCK_RATING)))
-            .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
-            .andReturn();
+            .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)));
 
         verify(feedbackService).createFeedback(any(FeedbackRequest.class));
     }
 
     @Test
-    void testCreateNewFeedbackFailure() throws Exception {
+    void createNewFeedback_returnsBadRequest_whenValidationFails() throws Exception {
         FeedbackRequest validRequest = createValidFeedbackRequest();
-        Feedback validFeedback = createValidFeedback();
         
         when(feedbackService.createFeedback(any(FeedbackRequest.class)))
                 .thenThrow(new ValidationException("Who do you think you are, with your knees halfway up your legs like that?"));
 
-        MvcResult mvcResult = mockMvc.perform(post(API_ROOT)
-                                              .contentType(MediaType.APPLICATION_JSON)
-                                              .content(asJsonString(validRequest)))
-            .andExpect(status().isBadRequest())
-            .andReturn();
+        mockMvc.perform(post(API_ROOT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(validRequest)))
+            .andExpect(status().isBadRequest());
 
         verify(feedbackService).createFeedback(any(FeedbackRequest.class));
     }
 
     @Test
-    void testFindFeedbackByIdSuccess() throws Exception {
+    void findFeedbackById_returnsOk_whenFeedbackExists() throws Exception {
         Feedback validFeedback = createValidFeedback();
         UUID validUUID = UUID.randomUUID();
         validFeedback.setId(validUUID);
@@ -145,34 +129,32 @@ public class FeedbackControllerTest {
         when(feedbackService.findFeedbackById(any(UUID.class)))
             .thenReturn(Optional.of(validResponse));
 
-        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + API_FEEDBACK_PARAM, validUUID.toString()))
+        mockMvc.perform(get(API_ROOT + API_FEEDBACK_PARAM, validUUID.toString()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath(FEEDBACK_ID_PATH).doesNotExist())
-            .andExpect(jsonPath(MEMBER_ID_PATH).doesNotExist())
+            .andExpect(jsonPath(FEEDBACK_ID_PATH, is(validUUID.toString())))
+            .andExpect(jsonPath(MEMBER_ID_PATH, is(MOCK_MEMBER_ID)))
             .andExpect(jsonPath(PROVIDER_NAME_PATH, is(MOCK_PROVIDER_NAME)))
             .andExpect(jsonPath(RATING_PATH, is(MOCK_RATING)))
-            .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)))
-            .andReturn();
+            .andExpect(jsonPath(COMMENT_PATH, is(MOCK_COMMENT)));
 
         verify(feedbackService).findFeedbackById(validUUID);
     }
 
     @Test
-    void testFindFeedbackByIdFailure() throws Exception {
+    void findFeedbackById_returnsNotFound_whenFeedbackDoesNotExist() throws Exception {
         UUID validUUID = UUID.randomUUID();
 
         when(feedbackService.findFeedbackById(any(UUID.class)))
             .thenReturn(Optional.empty());
 
-        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + API_FEEDBACK_PARAM, validUUID.toString()))
-            .andExpect(status().isNotFound())
-            .andReturn();
+        mockMvc.perform(get(API_ROOT + API_FEEDBACK_PARAM, validUUID.toString()))
+            .andExpect(status().isNotFound());
 
         verify(feedbackService).findFeedbackById(validUUID);
     }
     
     @Test
-    void testFindFeedbackByMemberIdSuccess() throws Exception {
+    void findFeedbackByMemberId_returnsNonEmptyList_whenFeedbackExistsForMember() throws Exception {
         Feedback validFeedback = createValidFeedback();
         FeedbackResponse validResponse = FeedbackResponse.from(validFeedback);
         List<FeedbackResponse> responseList = new ArrayList<>();
@@ -181,11 +163,10 @@ public class FeedbackControllerTest {
         when(feedbackService.findFeedbackByMemberId(any(String.class)))
             .thenReturn(responseList);
 
-        MvcResult mvcResult = mockMvc.perform(get(API_ROOT + API_MEMBER_PARAM + MOCK_MEMBER_ID))
+        mockMvc.perform(get(API_ROOT + API_MEMBER_PARAM + MOCK_MEMBER_ID))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andReturn();
+            .andExpect(jsonPath("$.length()").value(1));
 
         verify(feedbackService).findFeedbackByMemberId(MOCK_MEMBER_ID);
     }

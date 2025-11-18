@@ -3,7 +3,6 @@ package com.joey.stanley.group.project.feedback_api.controllers;
 import com.joey.stanley.group.project.feedback_api.dtos.ErrorResponse;
 import com.joey.stanley.group.project.feedback_api.dtos.FeedbackRequest;
 import com.joey.stanley.group.project.feedback_api.dtos.FeedbackResponse;
-import com.joey.stanley.group.project.feedback_api.entity.Feedback;
 import com.joey.stanley.group.project.feedback_api.services.FeedbackService;
 import com.joey.stanley.group.project.feedback_api.services.ValidationException;
 
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,19 +39,18 @@ public class FeedbackController {
     }
 
     @PostMapping(value="/feedback")
-    public ResponseEntity<Object> createNewFeedback(@RequestBody FeedbackRequest entity) {
+    public ResponseEntity<Object> createNewFeedback(@RequestBody FeedbackRequest feedbackRequest) {
         try {
-            System.out.println("endpoint hit");
-            Feedback created = feedbackService.createFeedback(entity);
-            URI location = URI.create("/api/v1/feedback/" + created.getId().toString());
-            return ResponseEntity.created(location).body(created);
+            FeedbackResponse createdFeedback = feedbackService.createFeedback(feedbackRequest);
+            URI location = URI.create("/api/v1/feedback/" + createdFeedback.getId().toString());
+            return ResponseEntity.created(location).body(createdFeedback);
         } catch (ValidationException ex) {
             return ResponseEntity.badRequest().body(ErrorResponse.from(ex));
         }
     }
 
     @GetMapping(value="/feedback/{feedbackId}")
-    public ResponseEntity<Object> findFeedbackById(@PathVariable UUID feedbackId) {
+    public ResponseEntity<FeedbackResponse> findFeedbackById(@PathVariable UUID feedbackId) {
         Optional<FeedbackResponse> response = feedbackService.findFeedbackById(feedbackId);
 
         if (response.isPresent()) {

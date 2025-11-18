@@ -98,3 +98,4 @@ volumes:
 networks:
   stanjgcnet:
     driver: bridge
+    name: stanjgcnet
