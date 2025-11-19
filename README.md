@@ -2,8 +2,6 @@
 
 This is a full-stack capstone project for TSG (weeks 7 and 8).
 
-This service validates incoming feedback, saves it to the database, and publishes a corresponding Kafka event.
-
 ## Authors
 
 - Stanley Aviles
@@ -39,12 +37,6 @@ docker compose -f solo.yml up
 
 All tests are run within the api and consumer docker containers, as part of the spin-up process.
 
-## Example Feedback Request
-```bash
-{
-"memberId": "m-101",
-"providerName": "Dr. Awesome",
-"rating": 5,
-"comment": "Excellent service, very satisfied!!"
-}
-```
+Logs for tests are found in `logs/test-results.log`.
+
+**NOTE:** This file does not get wiped between tests, so you might be seeing previous results in there, too!
