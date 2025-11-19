@@ -1,3 +1,4 @@
+mkdir ./logs
 logpath=./logs/test-results.log
 echo "---" >> "$logpath"
 echo "XXXXXXXXXXXXXXXXXXXX" >> "$logpath"
