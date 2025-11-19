@@ -36,3 +36,7 @@ docker compose -f solo.yml up
 ## Tests
 
 All tests are run within the api and consumer docker containers, as part of the spin-up process.
+
+Logs for tests are found in `logs/test-results.log`.
+
+**NOTE:** This file does not get wiped between tests, so you might be seeing previous results in there, too!
