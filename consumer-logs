@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+docker logs tsg-927-joey-stanley-feedback-api-feedback-analytics-consumer-1

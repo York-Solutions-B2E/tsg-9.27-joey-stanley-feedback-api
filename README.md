@@ -25,6 +25,18 @@ cd tsg-9.27-joey-stanley-feedback-api
 docker compose -f masterswitch.yml up
 ```
 
+To check the logs of the feedback consumer analytics module, make sure that the checker script has execution permissions:
+
+```bash
+chmod +x consumer-logs
+```
+
+Then run the script to check the logs from the consumer analytics module:
+
+```bash
+./consumer-logs
+```
+
 ## Run API In Isolation
 
 To run *just* the API (spring boot, kafka, postgres), run the following:
