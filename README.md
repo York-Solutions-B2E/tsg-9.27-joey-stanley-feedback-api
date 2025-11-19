@@ -39,10 +39,10 @@ All tests are run within the api and consumer docker containers, as part of the 
 
 Logs for tests are found in `logs/test-results.log`.
 
-**NOTE:** This file does not get wiped between tests, so you might be seeing previous results in there, too!
+**NOTE:** This file does not get wiped between tests, so you might be seeing previous results in there, too! A `NEW RUN` header is added between each batch of tests, for clarity.
 
 ## Example Feedback Request
-```bash
+```json
 {
 "memberId": "m-101",
 "providerName": "Dr. Awesome",
