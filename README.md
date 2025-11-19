@@ -45,6 +45,6 @@ All tests are run within the api and consumer docker containers, as part of the 
 "memberId": "m-101",
 "providerName": "Dr. Awesome",
 "rating": 5,
-"comment": "Excellent service, very satisfied!"
+"comment": "Excellent service, very satisfied!!"
 }
 ```
