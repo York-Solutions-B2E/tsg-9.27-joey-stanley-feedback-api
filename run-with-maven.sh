@@ -8,7 +8,7 @@ echo "---" >> "$logpath"
 set -o pipefail
 ./mvnw clean test | tee -a ./logs/test-results.log
 if [ $? -eq 0 ]; then
-    ./mvnw -DskipTests package spring-boot:run
+    ./mvnw -DskipTests spring-boot:run
     set +o pipefail
 else
     set +o pipefail
