@@ -5,9 +5,9 @@ echo "XX    NEW  RUN    XX" >> "$logpath"
 echo "XXXXXXXXXXXXXXXXXXXX" >> "$logpath"
 echo "---" >> "$logpath"
 set -o pipefail
-mvn clean test | tee -a ./logs/test-results.log
+./mvnw clean test | tee -a ./logs/test-results.log
 if [ $? -eq 0 ]; then
-    mvn spring-boot:run
+    ./mvnw -DskipTests package spring-boot:run
     set +o pipefail
 else
     set +o pipefail
